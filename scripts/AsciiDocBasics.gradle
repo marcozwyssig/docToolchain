@@ -227,6 +227,10 @@ task generatePDF (
         'plantUMLDir'         : file("${docDir}/${config.outputPath}/images/").path,
         'imagesoutdir'        : file("${docDir}/${config.outputPath}/images/").path
     )
+    
+    attributes (
+        'doctype': 'book'
+    )
 
     def sourceFilesPDF = sourceFiles.findAll {
         'pdf' in it.formats
