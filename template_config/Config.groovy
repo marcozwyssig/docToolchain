@@ -35,6 +35,15 @@ taskInputsFiles = []
 
 //*****************************************************************************************
 
+// Configuration for customTasks
+// create a new Task with ./dtcw createTask
+customTasks = [
+/** customTasks **/
+]
+
+
+//*****************************************************************************************
+
 //Configuration for microsite: generateSite + previewSite
 
 microsite = [:]
@@ -105,6 +114,43 @@ microsite.with {
     // set a title to '-' in order to remove this menu entry.
     menu = [:]
 
+/**
+tag::additionalConverters[]
+
+if you need support for additional markup converters, you can configure them here
+you have three different types of script you can define:
+
+- groovy: just groovy code as string
+- groovyFile: path to a groovy script
+- bash: a bash command. It will receive the name of the file to be converted as first argument
+
+`groovy` and `groovyFile` will have access to the file and config object
+
+`dtcw:rstToHtml.py` is an internal script to convert restructuredText.
+Needs `python3` and `docutils` installed.
+
+end::additionalConverters[]
+**/
+    additionalConverters = [
+        //'.one': [command: 'println "test"+file.canonicalPath', type: 'groovy'],
+        //'.two': [command: 'scripts/convert-md.groovy', type: 'groovyFile'],
+        //'.rst': [command: 'dtcw:rstToHtml.py', type: 'bash'],
+    ]
+
+    // if you prefer another convention regarding the automatic generation
+    // of jBake headers, you can configure a script to modify them here
+    // the script has access to
+    // - file: the current object
+    // - sourceFolder: the copy of the docs-source on which the build operates
+    //                 default `/microsite/tmp/site/doc`
+    // - config: the config object (this file, but parsed)
+    // - headers: already parsed headers to be modified
+    /**
+    customConvention = """
+        System.out.println file.canonicalPath
+        headers.title += " - from CustomConvention"
+    """.stripIndent()
+    **/
 }
 
 //*****************************************************************************************
@@ -137,7 +183,7 @@ changelog.with {
 //*****************************************************************************************
 
 //tag::confluenceConfig[]
-//Configureation for publishToConfluence
+//Configuration for publishToConfluence
 
 confluence = [:]
 
@@ -164,6 +210,8 @@ to configure a different parent page for each file.
 The following four keys can also be used in the global section below
 
 - `spaceKey` (optional): page specific variable for the key of the confluence space to write to
+- 'allInOnePage' (optional): page specific variable to determine whether documentation is written to just one
+                             Confluence page or separate ones per chapter (default)
 - `createSubpages` (optional): page specific variable to determine whether ".sect2" sections shall be split from the current page into subpages
 - `pagePrefix` (optional): page specific variable, the pagePrefix will be a prefix for the page title and it's sub-pages
                            use this if you only have access to one confluence space but need to store several
@@ -194,6 +242,10 @@ confluence.with {
 
     // the title of the page containing the preamble (everything the first second level heading). Default is 'arc42'
     preambleTitle = ''
+
+    // variable to determine whether the whole document should be uploaded as just one page or split into separate
+    // pages per chapter
+    allInOnePage = false
 
     // variable to determine whether ".sect2" sections shall be split from the current page into subpages
     createSubpages = false
@@ -228,6 +280,9 @@ confluence.with {
     // enable or disable attachment uploads for local file references
     enableAttachments = false
 
+    // variable to limit number of pages retreived per REST-API call
+    pageLimit = 100
+
     // default attachmentPrefix = attachment - All files to attach will require to be linked inside the document.
     // attachmentPrefix = "attachment"
 
@@ -241,6 +296,7 @@ confluence.with {
     // useOpenapiMacro = "confluence-open-api"
 }
 //end::confluenceConfig[]
+
 //*****************************************************************************************
 //tag::exportEAConfig[]
 //Configuration for the export script 'exportEA.vbs'.
@@ -383,3 +439,20 @@ sprintChangelog.with {
     allSprintsFilename = 'Sprints_Changelogs' // Extension will be automatically added.
 }
 //end::sprintChangelogConfig[]
+
+//tag::collectIncludesConfig[]
+collectIncludes = [:]
+
+collectIncludes.with {
+
+    fileFilter = "adoc" // define which files are considered. default: "ad|adoc|asciidoc"
+
+    minPrefixLength = "3" // define what minimum length the prefix. default: "3"
+
+    maxPrefixLength = "3" // define what maximum length the prefix. default: ""
+
+    separatorChar = "_" // define the allowed separators after prefix. default: "-_"
+
+    cleanOutputFolder = true // should the output folder be emptied before generation? defailt: false
+}
+//end::collectIncludesConfig[]

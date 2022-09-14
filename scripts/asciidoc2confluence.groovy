@@ -66,6 +66,7 @@ def allPages
 
 def confluenceSpaceKey
 def confluenceCreateSubpages
+def confluenceAllInOnePage
 def confluencePagePrefix
 def baseApiPath = new URI(config.confluence.api).path
 // helper functions
@@ -189,13 +190,13 @@ def uploadAttachment = { def pageId, String url, String fileName, String note ->
         }
     } else {
         http = new HTTPBuilder(config.confluence.api + 'content/' + pageId + '/child/attachment')
-        
+
     }
-    if (http) {																												
+    if (http) {
 		if (config.confluence.proxy) {
             http.setProxy(config.confluence.proxy.host, config.confluence.proxy.port, config.confluence.proxy.schema ?: 'http')
-        } 
-		
+        }
+
         http.request(Method.POST) { req ->
             requestContentType: "multipart/form-data"
             MultipartEntity multiPartContent = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE)
@@ -221,58 +222,129 @@ def rewriteMarks = { body ->
     body.select('mark').wrap('<span style="background:#ff0;color:#000"></style>').unwrap()
 }
 
+def retrieveAllPagesByAncestorId(RESTClient api, Map headers, List<String> pageIds, String baseApiPath, int pageLimit) {
+    def allPages = [:]
+    def request = [
+        'type' : 'page',
+        'limit': pageLimit
+    ]
+
+    int start = 0
+    def ids = []
+    def pageId = pageIds.remove(0)
+    boolean morePages = true
+    while (morePages) {
+        def results = trythis {
+            request.start = start
+            def args = [
+                'headers': headers,
+                'path'   : "${baseApiPath}content/${pageId}/child/page",
+                'query'  : request,
+            ]
+            api.get(args).data
+        } ?: []
+
+        results = results.results ?: []
+
+
+        results.inject(allPages) { Map acc, Map match ->
+            //unique page names in confluence, so we can get away with indexing by title
+            ids.add(match.id)
+            acc[match.title.toLowerCase()] = [
+                title   : match.title,
+                id      : match.id,
+                parentId: pageId
+            ]
+            acc
+        }
+
+        if (results.empty && ids.isEmpty()) {
+            if(pageIds.isEmpty()) {
+                morePages = false
+            } else {
+                pageId = pageIds.remove(0)
+            }
+        } else if (!results.empty) {
+            start += results.size
+        } else {
+            start = 0
+            pageId = ids.remove(0);
+        }
+    }
+    allPages
+}
+
+def retrieveAllPagesBySpace(RESTClient api, Map headers, String spaceKey, String baseApiPath, int pageLimit) {
+    boolean morePages = true
+    int start = 0
+    def request = [
+        'type'    : 'page',
+        'spaceKey': spaceKey,
+        'expand'  : 'ancestors',
+        'limit'   : pageLimit
+    ]
+
+    def allPages = [:]
+    while (morePages) {
+        def results = trythis {
+            request.start = start
+            def args = [
+                'headers': headers,
+                'path'   : "${baseApiPath}content",
+                'query'  : request,
+            ]
+            api.get(args).data
+        } ?: []
+        results = results.results ?: []
+        if (results.empty) {
+            morePages = false
+        } else {
+            start += results.size
+        }
+        results.inject(allPages) { Map acc, Map match ->
+            //unique page names in confluence, so we can get away with indexing by title
+            def ancestors = match.ancestors.collect { it.id }
+            acc[match.title.toLowerCase()] = [
+                title   : match.title,
+                id      : match.id,
+                parentId: ancestors.isEmpty() ? null : ancestors.last()
+            ]
+            acc
+        }
+    }
+    allPages
+}
+
 // #352-LuisMuniz: Helper methods
-// Fetch all pages of the space. Only keep relevant info in the pages Map
+// Fetch all pages of the defined config ancestorsIds. Only keep relevant info in the pages Map
 // The map is indexed by lower-case title
 def retrieveAllPages = { RESTClient api, Map headers, String spaceKey ->
     if (allPages != null) {
         println "allPages already retrieved"
         allPages
     } else {
-
-        boolean morePages=true
-        int start=0
-        def request = [
-                'type'    : 'page',
-                'spaceKey': spaceKey,
-                'expand'  : 'ancestors',
-                'limit'   : 100
-        ]
-
-        allPages =[:]
-        while(morePages) {
-            def results = trythis {
-                request.start=start
-                def args = [
-                        'headers': headers,
-                        'path'   : "${baseApiPath}content",
-                        'query'  : request,
-                ]
-                api.get(args).data.results
-            } ?: []
-
-            if (results.empty) {
-                morePages=false
-            } else {
-                start += results.size
+        def pageIds = []
+        def checkSpace = false
+        int pageLimit = config.confluence.pageLimit ? config.confluence.pageLimit : 100
+        config.confluence.input.each { input ->
+            if (!input.ancestorId) {
+                // if one ancestorId is missing we should scan the whole space
+                checkSpace = true;
+                return
             }
-
-            results.inject(allPages) { Map acc, Map match ->
-                //unique page names in confluence, so we can get away with indexing by title
-                def ancestors = match.ancestors.collect { it.id }
-
-                acc[match.title.toLowerCase()] = [
-                        title   : match.title,
-                        id      : match.id,
-                        parentId: ancestors.isEmpty() ? null : ancestors.last()
-                ]
-                acc
-            }
+            pageIds.add(input.ancestorId)
         }
+        println (".")
 
+        if(checkSpace) {
+            allPages = retrieveAllPagesBySpace(api, headers, spaceKey, baseApiPath, pageLimit)
+        } else {
+            allPages = retrieveAllPagesByAncestorId(api, headers, pageIds, baseApiPath, pageLimit)
+        }
         allPages
     }
 }
+
 
 // Retrieve a page by id with contents and version
 def retrieveFullPage = { RESTClient api, Map headers, String id ->
@@ -374,7 +446,7 @@ def rewriteJiraLinks = { body ->
     // find links to jira tickets and replace them with jira macros
     body.select('a[href]').each { a ->
         def href = a.attr('href')
-        if (href.startsWith(config.jira.api + "/browse/")) { 
+        if (href.startsWith(config.jira.api + "/browse/")) {
                 def ticketId = a.text()
                 a.before("""<ac:structured-macro ac:name=\"jira\" ac:schema-version=\"1\">
                      <ac:parameter ac:name=\"key\">${ticketId}</ac:parameter>
@@ -795,14 +867,14 @@ def getHeaders(){
     if(config.confluence.bearerToken){
         headers = [
                 'Authorization': 'Bearer ' + config.confluence.bearerToken,
-                'X-Atlassian-Token':'no-check'            
-        ]         
-         println 'Start using bearer auth'     
+                'X-Atlassian-Token':'no-check'
+        ]
+         println 'Start using bearer auth'
     } else {
         headers = [
                 'Authorization': 'Basic ' + config.confluence.credentials,
                 'X-Atlassian-Token':'no-check'
-        ]     
+        ]
         //Add api key and value to REST API request header if configured - required for authentification.
         if (config.confluence.apikey){
             headers.keyid = config.confluence.apikey
@@ -815,7 +887,7 @@ if(config.confluence.inputHtmlFolder) {
     htmlFolder = "${docDir}/${config.confluence.inputHtmlFolder}"
     println "Starting processing files in folder: " + config.confluence.inputHtmlFolder
     def dir = new File(htmlFolder)
-    
+
     dir.eachFileRecurse (FILES) { fileName ->
         if (fileName.isFile()){
             def map = [file: config.confluence.inputHtmlFolder+fileName.getName()]
@@ -839,6 +911,12 @@ config.confluence.input.each { input ->
     //  assignend, but never used in pushToConfluence(...) (fixed here)
         confluenceSpaceKey = input.spaceKey ?: config.confluence.spaceKey
         confluenceCreateSubpages = (input.createSubpages != null) ? input.createSubpages : config.confluence.createSubpages
+        confluenceAllInOnePage = (input.allInOnePage != null) ? input.allInOnePage : config.confluence.allInOnePage
+        if (confluenceAllInOnePage && confluenceCreateSubpages) {
+            println "ERROR:"
+            println "Conflicting config: One one of confluenceAllInOnePage or confluenceCreateSubpages can be true."
+            throw new RuntimeException("config problem")
+        }
     //  hard to read in case of using :sectnums: -> so we add a suffix
         confluencePagePrefix = input.pagePrefix ?: config.confluence.pagePrefix
     //  added
@@ -879,54 +957,68 @@ config.confluence.input.each { input ->
             }
             println "Keywords:" + keywords
         }
-        // let's try to select the "first page" and push it to confluence
-        dom.select('div#preamble div.sectionbody').each { pageBody ->
-            pageBody.select('div.sect2').unwrap()
-            def preamble = [
-                title: confluencePreambleTitle ?: "arc42",
-                body: pageBody,
-                children: [],
-                parent: parentId
-            ]
-            pages << preamble
-            sections = preamble.children
-            parentId = null
-            anchors.putAll(parseAnchors(preamble))
-        }
-        // <div class="sect1"> are the main headings
-        // let's extract these
-        dom.select('div.sect1').each { sect1 ->
-            Elements pageBody = sect1.select('div.sectionbody')
-            def currentPage = [
-                title: sect1.select('h2').text(),
-                body: pageBody,
-                children: [],
-                parent: parentId
-            ]
-            pageAnchors.putAll(recordPageAnchor(sect1.select('h2')))
-
-            if (confluenceCreateSubpages) {
-                pageBody.select('div.sect2').each { sect2 ->
-                    def title = sect2.select('h3').text()
-                    pageAnchors.putAll(recordPageAnchor(sect2.select('h3')))
-                    sect2.select('h3').remove()
-                    def body = Jsoup.parse(sect2.toString(),'utf-8', Parser.xmlParser())
-                    body.outputSettings(new Document.OutputSettings().prettyPrint(false))
-                    def subPage = [
-                        title: title,
-                        body: body
-                    ]
-                    currentPage.children << subPage
-                    promoteHeaders sect2, 4, 3
-                    anchors.putAll(parseAnchors(subPage))
-                }
-                pageBody.select('div.sect2').remove()
-            } else {
+        if (confluenceAllInOnePage) {
+            dom.select('div#content').each { pageBody ->
                 pageBody.select('div.sect2').unwrap()
-                promoteHeaders sect1, 3, 2
+                def page = [title   : confluencePreambleTitle ?: "arc42",
+                            body    : pageBody,
+                            children: [],
+                            parent  : parentId]
+                pages << page
+                sections = page.children
+                parentId = null
+                anchors.putAll(parseAnchors(page))
             }
-            sections << currentPage
-            anchors.putAll(parseAnchors(currentPage))
+        } else {
+            // let's try to select the "first page" and push it to confluence
+            dom.select('div#preamble div.sectionbody').each { pageBody ->
+                pageBody.select('div.sect2').unwrap()
+                def preamble = [
+                    title: confluencePreambleTitle ?: "arc42",
+                    body: pageBody,
+                    children: [],
+                    parent: parentId
+                ]
+                pages << preamble
+                sections = preamble.children
+                parentId = null
+                anchors.putAll(parseAnchors(preamble))
+            }
+            // <div class="sect1"> are the main headings
+            // let's extract these
+            dom.select('div.sect1').each { sect1 ->
+                Elements pageBody = sect1.select('div.sectionbody')
+                def currentPage = [
+                    title: sect1.select('h2').text(),
+                    body: pageBody,
+                    children: [],
+                    parent: parentId
+                ]
+                pageAnchors.putAll(recordPageAnchor(sect1.select('h2')))
+
+                if (confluenceCreateSubpages) {
+                    pageBody.select('div.sect2').each { sect2 ->
+                        def title = sect2.select('h3').text()
+                        pageAnchors.putAll(recordPageAnchor(sect2.select('h3')))
+                        sect2.select('h3').remove()
+                        def body = Jsoup.parse(sect2.toString(),'utf-8', Parser.xmlParser())
+                        body.outputSettings(new Document.OutputSettings().prettyPrint(false))
+                        def subPage = [
+                            title: title,
+                            body: body
+                        ]
+                        currentPage.children << subPage
+                        promoteHeaders sect2, 4, 3
+                        anchors.putAll(parseAnchors(subPage))
+                    }
+                    pageBody.select('div.sect2').remove()
+                } else {
+                    pageBody.select('div.sect2').unwrap()
+                    promoteHeaders sect1, 3, 2
+                }
+                sections << currentPage
+                anchors.putAll(parseAnchors(currentPage))
+            }
         }
 
         pushPages pages, anchors, pageAnchors, keywords
