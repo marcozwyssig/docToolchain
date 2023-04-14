@@ -88,6 +88,9 @@
   #td-section-nav ul.td-sidebar-nav__section  {
     padding-left:0px;
   }
+  span.navbar-logo {
+    padding-right: 1.5em;
+  }
   .match {
       font-size: smaller;
   }
@@ -145,7 +148,7 @@
 	
 <nav class="js-navbar-scroll navbar navbar-expand navbar-dark flex-column flex-md-row td-navbar">
     <a class="navbar-brand" href="../index.html">
-        <span class="navbar-logo"></span><span
+        <span class="navbar-logo"><img src="../images/doctoolchain-logo-blue.png" width="32px" /></span><span
             class="font-weight-bold">docToolchain</span>
     </a>
     <div class="td-navbar-nav-scroll ml-md-auto" id="main_navbar">
@@ -251,6 +254,10 @@
                                 <a class="align-left pl-0 pr-2 td-sidebar-link td-sidebar-link__section "
                                    href="../020_tutorial/120_self-contained-dtc.html">Self-Contained docToolchain</a>
                             </li>
+                            <li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child">
+                                <a class="align-left pl-0 pr-2 td-sidebar-link td-sidebar-link__section "
+                                   href="../020_tutorial/990_Tutorial.html">How to create a Tutorial</a>
+                            </li>
                         </ul>
                     </li>
                 </ul>
@@ -262,11 +269,11 @@
 				<div class="td-page-meta ml-2 pb-1 pt-2 mb-0">
 					
 
-        <a href="https://github.com/doctoolchain/doctoolchain/edit/null/src/docs/020_tutorial/050_multipleRepositories.adoc"
+        <a href="https://github.com/doctoolchain/doctoolchain/edit/ng/src/docs/020_tutorial/050_multipleRepositories.adoc"
            target="_blank"><i class="fa fa-edit fa-fw"></i> Improve this doc</a>
 
 
-        <a href="https://github.com/docToolchain/docToolchain/issues/new?title=Docs%3A+Feedback+for+%27Multi-Repo%27&body=%0A%0A%5BEnter%20feedback%20here%5D%0A%0A%0A---%0A%23page:%20https://github.com/doctoolchain/doctoolchain/edit/null/src/docs/020_tutorial/050_multipleRepositories.adoc%0A%23branch:%20" target="_blank"><i
+        <a href="https://github.com/docToolchain/docToolchain/issues/new?title=Docs%3A+Feedback+for+%27Multi-Repo%27&body=%0A%0A%5BEnter%20feedback%20here%5D%0A%0A%0A---%0A%23page:%20https://github.com/doctoolchain/doctoolchain/edit/ng/src/docs/020_tutorial/050_multipleRepositories.adoc%0A%23branch:%20ng" target="_blank"><i
                 class="fab fa-github fa-fw"></i> Create an issue</a>
 
         
@@ -308,7 +315,7 @@
 <div class="sectionbody">
 <div class="paragraph">
 <p>Some static site generators sell multi-repository functionality as a feature.
-This feature is mainly achieved through a build in git client.</p>
+This feature is mainly achieved through a built-in git client.</p>
 </div>
 <div class="paragraph">
 <p>Since we almost always work on systems which already have git installed, docToolchain does not come with its own git client.</p>
@@ -353,8 +360,30 @@ cloneOrPull git@github.com:docToolchain/docToolchain.git build/refs/docToolchain
 </div>
 <div class="paragraph">
 <p>That&#8217;s better.
-We can now include the docs from our main docs.
-But what if we don&#8217;t want to include them but just let them render?
+We can now include the docs from our main docs.</p>
+</div>
+<div class="paragraph">
+<p>To do so, we still need a little Trick.
+We need to reference the docs in the build folder.</p>
+</div>
+<div class="paragraph">
+<p>We could do something like <code>include::../../../build/refs/docToolchain/somefile.adoc[]</code> but this will break.
+For this, docToolchain sets the attribute <code>projectRootDir</code>.
+With this, we can write the include as <code>include::/home/runner/work/docToolchain/docToolchain/build/refs/docToolchain/somefile.adoc[]</code>.</p>
+</div>
+<div class="paragraph">
+<p>In order to get <code>projectRootDir</code> also in your local preview, create a file called <a href="https://intellij-asciidoc-plugin.ahus1.de/docs/users-guide/features/advanced/asciidoctorconfig-file.html"><code>.asciidoctorconfig</code></a> in the root folder of your project and add</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="prettyprint highlight"><code>:projectRootDir: {asciidoctorconfigdir}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>as content.</p>
+</div>
+<div class="paragraph">
+<p>But what if we don&#8217;t want to include them but just let them render?
 We could clone the repository directly to our <code>src/docs</code> folder.
 But that would require that it only contains docs and no <code>src/docs</code> folder itself.
 So we have to copy it over to our <code>src/docs</code> folder.</p>
@@ -387,7 +416,7 @@ src/docs/manual
 <div class="paragraph">
 <p>There is one more thing we can optimize.
 Currently, the script clones the repository with the full history.
-This is far to much traffic if you only want to use the latest version of your docs.
+This is far too much traffic if you only want to use the latest version of your docs.
 Let&#8217;s add <code>--depth 1</code> to the `git clone`command to only fetch the latest version.</p>
 </div>
 <div class="listingblock">
@@ -411,13 +440,13 @@ cp build/refs/docToolchain/src/docs/manual src/docs/.</code></pre>
 <div class="sect2">
 <h3 id="_git_submodule_solution">git submodule solution</h3>
 <div class="paragraph">
-<p>Another solution is to refrence your sub-repositories as <a href="https://git-scm.com/book/de/v2/Git-Tools-Submodule">git submodules</a>.
+<p>Another solution is to reference your sub-repositories as <a href="https://git-scm.com/book/de/v2/Git-Tools-Submodule">git submodules</a>.
 Git submodules are pointers in your main repository to a certain version of another repository.
-Most CI/CD systems clone your repository together will als configured submodules.
+Most CI/CD systems clone your repository together with all the configured submodules.
 This makes this approach quite convenient.</p>
 </div>
 <div class="paragraph">
-<p>A draw back is that submodules are not often used and thus developers are not used to them.</p>
+<p>A drawback is that submodules are not often used and thus developers are not used to them.</p>
 </div>
 </div>
 <div class="sect2">
@@ -584,7 +613,7 @@ That would be exactly what you do with code.</p>
                 </div>
                 <div class="col-12 col-sm-4 text-center py-2 order-sm-2">
 
-                        <small class="text-white">built with <a href="https://doctoolchain.org">docToolchain</a> and <a href="https://jbake.org">jBake</a> <br /> theme: <a href="https://www.docsy.dev/">docsy</a></small>
+                        <script defer data-domain="doctoolchain.org" src="https://plausible.io/js/script.js"></script><small class="text-white">built with <a href="https://doctoolchain.org">docToolchain</a> and <a href="https://jbake.org">jBake</a> <br /> theme: <a href="https://www.docsy.dev/">docsy</a></small>
 
                 </div>
             </div>
