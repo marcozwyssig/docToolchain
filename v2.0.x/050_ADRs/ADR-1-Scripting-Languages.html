@@ -1,31 +1,33 @@
 <!doctype html>
 <html lang="de">
 <head>
-  
-  <!-- 020_tutorial/040_generateSite.html -->
-  <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+    
+    <!-- sourceuri: 050_ADRs/ADR-1-Scripting-Languages.html -->
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
 
-  <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
-  <meta content="jbake" name="generator">
-  <meta content="INDEX, FOLLOW" name="ROBOTS">
+    <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
+    <meta content="jbake" name="generator">
+    <meta content="INDEX, FOLLOW" name="ROBOTS">
 
-  <title>generateSite</title>
-  <meta content="docToolchain" property="og:title">
-  <meta content="build your dev docs the easy way..." property="og:description">
-  <meta content="website" property="og:type">
-  <meta content="docToolchain" property="og:site_name">
-  <meta content="docToolchain" itemprop="name">
-  <meta content="build your dev docs the easy way..." itemprop="description">
-  <meta content="summary" name="twitter:card">
-  <meta content="docToolchain" name="twitter:title">
-  <meta content="build your dev docs the easy way..." name="twitter:description">
+    <title>ADR-01: Scripting</title>
+    <meta content="docToolchain" property="og:title">
+    <meta content="build your dev docs the easy way..." property="og:description">
+    <meta content="website" property="og:type">
+    <meta content="docToolchain" property="og:site_name">
+    <meta content="docToolchain" itemprop="name">
+    <meta content="build your dev docs the easy way..." itemprop="description">
+    <meta content="summary" name="twitter:card">
+    <meta content="docToolchain" name="twitter:title">
+    <meta content="build your dev docs the easy way..." name="twitter:description">
 
-  <link as="style" href="../css/main.min.881fe5f7b53609f55ebfb496c7097c3b30b2e8ceb20a54bc6a48350ded67224f.css"
+    <link as="style"
+        href="../css/main.min.881fe5f7b53609f55ebfb496c7097c3b30b2e8ceb20a54bc6a48350ded67224f.css"
         rel="preload">
-  <link href="../css/main.min.881fe5f7b53609f55ebfb496c7097c3b30b2e8ceb20a54bc6a48350ded67224f.css" integrity=""
+    <link href="../css/main.min.881fe5f7b53609f55ebfb496c7097c3b30b2e8ceb20a54bc6a48350ded67224f.css"
+        integrity=""
         rel="stylesheet">
-  <link href="../css/asciidoctor.css" rel="stylesheet">
-  <link href="../css/prettify.css" rel="stylesheet">
+    <link href="../css/asciidoctor.css" rel="stylesheet">
+    <link href="../css/prettify.css" rel="stylesheet">
 
     <!-- favicon generated with https://www.favicon-generator.org/ -->
     <link rel="shortcut icon" href="../favicon.ico">
@@ -38,7 +40,7 @@
     <link rel="apple-touch-icon" sizes="144x144" href="../apple-icon-144x144.png">
     <link rel="apple-touch-icon" sizes="152x152" href="../apple-icon-152x152.png">
     <link rel="apple-touch-icon" sizes="180x180" href="../apple-icon-180x180.png">
-    <link rel="icon" type="image/png" sizes="192x192"  href="../android-icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="../android-icon-192x192.png">
     <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png">
     <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
@@ -47,65 +49,76 @@
     <meta name="msapplication-TileImage" content="../ms-icon-144x144.png">
     <meta name="theme-color" content="#ffffff">
 
-  <script src="../js/jquery-3.5.1.min.js"></script>
-  <style>
-      div.bg-light {
-          background-color: rgba(127, 180, 224, 0.3) !important;
-      }
-      //for blog posts
+    <script src="../js/jquery-3.5.1.min.js"></script>
+    <style>
+    div.bg-light {
+        background-color: rgba(127, 180, 224, 0.3) !important;
+    }
 
-  span.blogtag {
-      border-radius: 10px;
-      background-color: #30638E;
-      color: white;
-      padding: 5px 10px;
-  }
-  span.blogblogtag a {
-      color: white;
-      padding: 0
-  }
-  span.blogtag span {
-      margin-left: 10px;
-      border-radius: 10px;
-      background-color: white;
-      color: #30638E;
-  }
-  div.td-toc {
-    height: calc(100vh - 5rem) !important;
-  }
-  div#toctitle {
-    display: none
-  }
-  #td-section-nav {
-    max-height: calc(100vh - 4rem);
-    font-size: smaller;
-    line-hight: 1.1;
-  }
-  .td-page-meta {
-      font-size: smaller;
-      line-hight: 1.1;
-  }
-  #td-section-nav ul.td-sidebar-nav__section  {
-    padding-left:0px;
-  }
-  span.navbar-logo {
-    padding-right: 1.5em;
-  }
-  .match {
-      font-size: smaller;
-  }
-      .admonitionblock td.icon .fa:before {
-          font-size: xxx-large;
-      }
-  </style>
+    /* for blog posts */
+    span.blogtag {
+        border-radius: 10px;
+        background-color: #30638E;
+        color: white;
+        padding: 5px 10px;
+    }
 
-   <style>
+    span.blogblogtag a {
+        color: white;
+        padding: 0
+    }
+
+    span.blogtag span {
+        margin-left: 10px;
+        border-radius: 10px;
+        background-color: white;
+        color: #30638E;
+    }
+
+    div.td-toc {
+        height: calc(100vh - 5rem) !important;
+    }
+
+    div#toctitle {
+        display: none
+    }
+
+    #td-section-nav {
+        max-height: calc(100vh - 4rem);
+        font-size: smaller;
+        line-height: 1.1;
+    }
+
+    .td-page-meta {
+        font-size: smaller;
+        line-height: 1.1;
+    }
+
+    #td-section-nav ul.td-sidebar-nav__section {
+        padding-left: 0;
+    }
+
+    span.navbar-logo {
+        padding-right: 1.5em;
+    }
+
+    .match {
+        font-size: smaller;
+    }
+
+    .admonitionblock td.icon .fa:before {
+        font-size: xxx-large;
+    }
+    </style>
+
+    <style>
     div.openblock.primary div.content, div.openblock.secondary div.content {
         border: 1px solid #7a2518;
         padding: 5px;
     }
+
     div.openblock.primary div.content div.content, div.openblock.secondary div.content div.content {
-        border: 0px solid #7a2518;
+        border: 0 solid #7a2518;
         padding: 0;
     }
 
@@ -140,7 +153,51 @@
     }
     </style>
 
-
+    <!-- copy-n-paste.js -->
+    <style>
+        div.listingblock {
+            position: relative;
+        }
+        div.listingblock > span.icon {
+            position: absolute;
+            top: 2px;
+            right: 6px;
+            visibility: hidden;
+            z-index: 2;
+            cursor: pointer;
+        }
+        div.listingblock:hover > span.icon {
+            visibility: visible;
+        }
+        div.listingblock div.content pre {
+            margin: 0;
+        }
+    </style>
+    <style>
+        .td-sidebar-nav__section {
+            padding-left: 9px;
+        }
+        details {
+            margin-left: 10px;
+        }
+        summary {
+            cursor: pointer;
+            padding-left: 10px; /* Erhöhter linker Padding für den Pfeil */
+            list-style: none;
+            position: relative; /* Für absolute Positionierung des Pfeils */
+        }
+        summary::before {
+            content: '>';
+            position: absolute;
+            left: 10px; /* Position des Pfeils */
+            top: 50%;
+            transform: translateY(-50%) translateX(-120%);
+            transition: transform 0.3s;
+        }
+        details[open] > summary::before {
+            transform: translateY(-50%) translateX(-120%) rotate(90deg);
+        }
+    </style>
 </head>
 
 <body onload="prettyPrint()" class="td-section">
@@ -148,7 +205,7 @@
 	
 <nav class="js-navbar-scroll navbar navbar-expand navbar-dark flex-column flex-md-row td-navbar">
     <a class="navbar-brand" href="../index.html">
-        <span class="navbar-logo"><img src="../images/doctoolchain-logo-blue.png" width="32px" /></span><span
+        <span class="navbar-logo"><img src="../images/doctoolchain-logo-blue.png" alt="docToolchain" width="32px" /></span><span
             class="font-weight-bold">docToolchain</span>
     </a>
     <div class="td-navbar-nav-scroll ml-md-auto" id="main_navbar">
@@ -168,7 +225,7 @@
             </li>
 
             <li class="nav-item mr-4 mb-2 mb-lg-0">
-                <a class="nav-link active" href="../020_tutorial/010_Install.html"><span>Tutorial</span></a>
+                <a class="nav-link " href="../020_tutorial/010_Install.html"><span>Tutorial</span></a>
             </li>
 
             <li class="nav-item mr-4 mb-2 mb-lg-0">
@@ -196,6 +253,7 @@
 			<div class="col-12 col-md-3 col-xl-2 td-sidebar d-print-none">
 				<div class="td-sidebar__inner" id="td-sidebar-menu" >
 					
+
         <form class="td-sidebar__search d-flex align-items-center d-lg-none" action="../search.html">
 
             <input aria-label="Search this site…" name="q" autocomplete="off" class="form-control td-search-input"
@@ -208,59 +266,31 @@
             </button>
         </form>
 
-        <nav class="collapse td-sidebar-nav" id="td-section-nav" >
+        <nav aria-label="Submenu" class="collapse td-sidebar-nav" id="td-section-nav" >
 
-            <ul class="td-sidebar-nav__section pr-md-3">
+            <ul class="td-sidebar-nav__section">
                 <li class="td-sidebar-nav__section-title">
-                    <span class="align-left pl-0 pr-2 active td-sidebar-link td-sidebar-link__section">Tutorial</span>
+                    <span class="align-left pl-0 pr-2 pt-2 active td-sidebar-link td-sidebar-link__section">-</span>
                 </li>
-                <ul>
-                    <li class="collapse show" id="docs">
-                        
-                        <ul class="td-sidebar-nav__section pr-md-3 ul-0">
+                <li>
+                  <ul>
+                      <li class="collapse show" id="docs">
+                          
+                        <ul class="td-sidebar-nav__section ul-0">
                             <li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child">
-                                <a class="align-left pl-0 pr-2 td-sidebar-link td-sidebar-link__section "
-                                   href="../020_tutorial/010_Install.html">Install docToolchain</a>
+                                <a class="align-left pl-0 pr-2 pt-2 td-sidebar-link td-sidebar-link__section active"
+                                   href="../050_ADRs/ADR-1-Scripting-Languages.html" title="ADR-01: Scripting">ADR-01: Scripting</a>
+                                
                             </li>
                             <li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child">
-                                <a class="align-left pl-0 pr-2 td-sidebar-link td-sidebar-link__section "
-                                   href="../020_tutorial/020_arc42.html">arc42 Template</a>
-                            </li>
-                            <li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child">
-                                <a class="align-left pl-0 pr-2 td-sidebar-link td-sidebar-link__section "
-                                   href="../020_tutorial/030_generateHTML.html">generateHTML &amp; generatePDF</a>
-                            </li>
-                            <li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child">
-                                <a class="align-left pl-0 pr-2 td-sidebar-link td-sidebar-link__section active"
-                                   href="../020_tutorial/040_generateSite.html">generateSite</a>
-                            </li>
-                            <li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child">
-                                <a class="align-left pl-0 pr-2 td-sidebar-link td-sidebar-link__section "
-                                   href="../020_tutorial/050_multipleRepositories.html">Multi-Repo</a>
-                            </li>
-                            <li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child">
-                                <a class="align-left pl-0 pr-2 td-sidebar-link td-sidebar-link__section "
-                                   href="../020_tutorial/070_publishToConfluence.html">publishToConfluence</a>
-                            </li>
-                            <li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child">
-                                <a class="align-left pl-0 pr-2 td-sidebar-link td-sidebar-link__section "
-                                   href="../020_tutorial/100_diagrams.net.html">Diagrams: Diagrams.net</a>
-                            </li>
-                            <li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child">
-                                <a class="align-left pl-0 pr-2 td-sidebar-link td-sidebar-link__section "
-                                   href="../020_tutorial/110_revealjs_and_arc42_from_scratch.html">Reveal.js &amp; Arc42 from Scratch</a>
-                            </li>
-                            <li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child">
-                                <a class="align-left pl-0 pr-2 td-sidebar-link td-sidebar-link__section "
-                                   href="../020_tutorial/120_self-contained-dtc.html">Self-Contained docToolchain</a>
-                            </li>
-                            <li class="td-sidebar-nav__section-title td-sidebar-nav__section without-child">
-                                <a class="align-left pl-0 pr-2 td-sidebar-link td-sidebar-link__section "
-                                   href="../020_tutorial/990_Tutorial.html">How to create a Tutorial</a>
+                                <a class="align-left pl-0 pr-2 pt-2 td-sidebar-link td-sidebar-link__section "
+                                   href="../050_ADRs/ADR-2-separate-core-logic-from-gradle.html" title="ADR-02: Separate core logic from Gradle">ADR-02: Separate core logic from Gradle</a>
+                                
                             </li>
                         </ul>
-                    </li>
-                </ul>
+                      </li>
+                  </ul>
+                <li>
         </nav>
 
 				</div>
@@ -269,22 +299,80 @@
 				<div class="td-page-meta ml-2 pb-1 pt-2 mb-0">
 					
 
-        <a href="https://github.com/doctoolchain/doctoolchain/edit/ng/src/docs/020_tutorial/040_generateSite.adoc"
+        <a href="https://github.com/doctoolchain/doctoolchain/edit/ng/src/docs/050_ADRs/ADR-1-Scripting-Languages.adoc"
            target="_blank"><i class="fa fa-edit fa-fw"></i> Improve this doc</a>
 
 
-        <a href="https://github.com/docToolchain/docToolchain/issues/new?title=Docs%3A+Feedback+for+%27generateSite%27&body=%0A%0A%5BEnter%20feedback%20here%5D%0A%0A%0A---%0A%23page:%20https://github.com/doctoolchain/doctoolchain/edit/ng/src/docs/020_tutorial/040_generateSite.adoc%0A%23branch:%20ng" target="_blank"><i
+        <a href="https://github.com/docToolchain/docToolchain/issues/new?title=Docs%3A+Feedback+for+%27ADR-01%3A+Scripting%27&body=%0A%0A%5BEnter%20feedback%20here%5D%0A%0A%0A---%0A%23page:%20https://github.com/doctoolchain/doctoolchain/edit/ng/src/docs/050_ADRs/ADR-1-Scripting-Languages.adoc%0A%23branch:%20ng" target="_blank"><i
                 class="fab fa-github fa-fw"></i> Create an issue</a>
 
         
+        
+        <hr />
+<script>
+const issuesBaseUrl = "https://api.github.com/repos/doctoolchain/doctoolchain/issues";
+const searchTerm = "050_ADRs/ADR-1-Scripting-Languages.adoc";
+</script>
+
+<script src="../js/issues.js"></script>
+
+<style>
+        #issues-container {
+            background-color: white;
+            padding: 0px;
+            margin: 0;
+        }
+        .issue {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 5px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #eee;
+        }
+        .issue:last-child {
+            border-bottom: none;
+        }
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: -10px;
+        }
+        .issue-content {
+            flex-grow: 1;
+            background-color: rgba(255,255,255,0.6);
+        }
+        .issue-title {
+            font-weight: bold;
+            color: #0366d6;
+        }
+        .issue-date {
+            font-size: 0.9em;
+            color: #586069;
+        }
+
+</style>
+
+<div id="issues-container">
+searching issues...
+</div>
+
         <hr />
 
         <div id="toc" class="toc">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
-<li><a href="#_generatesite">generateSite</a></li>
+<li><a href="#_adr_01_scripting_languages_in_doctoolchain">ADR-01: Scripting Languages in docToolchain</a>
+<ul class="sectlevel2">
+<li><a href="#_status">Status</a></li>
+<li><a href="#_problem_and_context">Problem and Context</a></li>
+<li><a href="#_decision">Decision</a></li>
+<li><a href="#_consequences">Consequences</a></li>
+</ul>
+</li>
 </ul>
 </div>
+
 
 
 
@@ -305,81 +393,47 @@
         <p>
             
 <div class="sect1">
-<h2 id="_generatesite">generateSite</h2>
+<h2 id="_adr_01_scripting_languages_in_doctoolchain">ADR-01: Scripting Languages in docToolchain</h2>
 <div class="sectionbody">
+<div class="sect2">
+<h3 id="_status">Status</h3>
 <div class="paragraph">
-<p>The <a href="../015_tasks/03_task_generateSite.html"><code>generateSite</code></a> task is more advanced.
-In many cases, your goal will not be to create a single HTML document but a whole documentation website.
-This is where <code>generateSite</code> shines.
-It uses a static site generator to turn your document into a nice looking microsite with landing-page, local search and edit links.</p>
-</div>
-<div class="openblock primary">
-<div class="title">Linux / WSL2 with bash</div>
-<div class="content">
-<div class="listingblock">
-<div class="content">
-<pre class="prettyprint highlight"><code data-lang="bash">./dtcw generateSite</code></pre>
+<p>This decision is currently in effect.</p>
 </div>
 </div>
+<div class="sect2">
+<h3 id="_problem_and_context">Problem and Context</h3>
+<div class="paragraph">
+<p>In the docToolchain project, we have a variety of scripts written in different languages. This has raised questions about the rationale behind the selection of different languages for different scripts, especially when it comes to managing and maintaining these scripts.</p>
 </div>
 </div>
-<div class="openblock secondary">
-<div class="title">Windows with Powershell</div>
-<div class="content">
-<div class="listingblock">
-<div class="content">
-<pre class="prettyprint highlight"><code data-lang="powershell">./dtcw.ps1 generateSite</code></pre>
+<div class="sect2">
+<h3 id="_decision">Decision</h3>
+<div class="paragraph">
+<p>We have decided to primarily use Groovy for scripting tasks in the docToolchain project. This decision is based on the following reasons:</p>
 </div>
-</div>
-</div>
-</div>
-<div class="listingblock">
-<div class="title">output of generateHTML</div>
-<div class="content">
-<pre class="prettyprint highlight"><code data-lang="shell session">$ ./dtcw docker generateSite
-dtcw - docToolchain wrapper V0.24
-docToolchain V2.0.0
-
-Bash is running on WSL
-this might cause problems with plantUML
-see https://doctoolchain.github.io/docToolchain/#wsl for more details
-
-Java Version 11
-docker available
-home folder exists
-force use of docker
-/usr/bin/docker
-use docker installation
-Starting a Gradle Daemon (subsequent builds will be faster)
-
-&gt; Configure project :
-arc42/arc42.adoc
-
-&gt; Task :generateSite
-created
-/project/build/microsite/tmp
-copy internal theme /home/dtcuser/docToolchain/src/site
-copy project theme /project/src/site
-
-&gt; Task :copyImages
-&gt; Task :bake
-Warning: Nashorn engine is planned to be removed from a future JDK release
-
-BUILD SUCCESSFUL in 1m 15s
-3 actionable tasks: 3 executed</code></pre>
-</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Groovy is a language on the JVM, which is well-known and widely used in our team.</p>
+</li>
+<li>
+<p>Groovy is essentially Java on steroids, with 95% of Java code also being valid Groovy code, making it a versatile and powerful language for our needs.</p>
+</li>
+</ul>
 </div>
 <div class="paragraph">
-<p>The output is written to <code>build/microsite/output/index.html</code>.
-You can open this file in your browser and view the results.
-But you will notice that some features which rely on javascript will be broken.
-To avoid this, use the task <a href="../015_tasks/03_task_previewSite.html"><code>previewSite</code></a> to start a little webserver which presents you the site without flaws.</p>
+<p>However, we also use other languages when necessary. For instance, we use Visual Basic when there are no suitable Java libraries for certain tasks, such as extracting PowerPoint slides or diagrams from Sparx Enterprise Architect.</p>
 </div>
-<div id="html_out" class="imageblock">
-<div class="content">
-<img src="images/generateSite.png" alt="generateSite">
+<div class="paragraph">
+<p>The interaction between scripts written in different languages is managed through a Gradle task, which is also written in Groovy. This task invokes the necessary scripts through the shell, using a "streamingExecute" helper to show the progress of long-running scripts on the console.</p>
 </div>
-<div class="title">Figure 1. generated output of generateHTML task</div>
+</div>
+<div class="sect2">
+<h3 id="_consequences">Consequences</h3>
+<div class="paragraph">
+<p>As a result of this decision, most scripts are developed for a specific purpose at a given point in time and are updated only when necessary. Some scripts are updated on a regular basis due to their widespread use and the varying needs of users. Legacy scripts will be updated when there is a need for it.</p>
+</div>
 </div>
 </div>
 </div>
@@ -410,11 +464,11 @@ To avoid this, use the task <a href="../015_tasks/03_task_previewSite.html"><cod
     <button class="feedback--answer feedback--answer-yes">Yes</button>
     <button class="feedback--answer feedback--answer-no">No</button>
     <p class="feedback--response feedback--response-yes">
-        Glad to hear it! Please <a href="https://github.com/docToolchain/docToolchain/issues/new?title=Docs%3A+Feedback+for+%27generateSite%27%20%F0%9F%91%8D&body=%0A%0A%5BEnter%20feedback%20here%5D%0A%0A%0A---%0A%23page:020_tutorial/040_generateSite.adoc">tell us
+        Glad to hear it! Please <a href="https://github.com/docToolchain/docToolchain/issues/new?title=Docs%3A+Feedback+for+%27ADR-01%3A+Scripting%27%20%F0%9F%91%8D&body=%0A%0A%5BEnter%20feedback%20here%5D%0A%0A%0A---%0A%23page:050_ADRs/ADR-1-Scripting-Languages.adoc">tell us
     how we can improve</a>.
     </p>
     <p class="feedback--response feedback--response-no">
-        Sorry to hear that. Please <a href="https://github.com/docToolchain/docToolchain/issues/new?title=Docs%3A+Feedback+for+%27generateSite%27%20%F0%9F%91%8E&body=%0A%0A%5BEnter%20feedback%20here%5D%0A%0A%0A---%0A%23page:020_tutorial/040_generateSite.adoc">tell
+        Sorry to hear that. Please <a href="https://github.com/docToolchain/docToolchain/issues/new?title=Docs%3A+Feedback+for+%27ADR-01%3A+Scripting%27%20%F0%9F%91%8E&body=%0A%0A%5BEnter%20feedback%20here%5D%0A%0A%0A---%0A%23page:050_ADRs/ADR-1-Scripting-Languages.adoc">tell
     us how we can improve</a>.
     </p>
 </div>
@@ -536,7 +590,7 @@ To avoid this, use the task <a href="../015_tasks/03_task_previewSite.html"><cod
                 </div>
                 <div class="col-12 col-sm-4 text-center py-2 order-sm-2">
 
-                        <script defer data-domain="doctoolchain.org" src="https://plausible.io/js/script.js"></script><small class="text-white">built with <a href="https://doctoolchain.org">docToolchain</a> and <a href="https://jbake.org">jBake</a> <br /> theme: <a href="https://www.docsy.dev/">docsy</a></small>
+                        <small class="text-white">built with <a href="https://doctoolchain.org">docToolchain</a> and <a href="https://jbake.org">jBake</a> <br /> theme: <a href="https://www.docsy.dev/">docsy</a></small>
 
                 </div>
             </div>
@@ -550,6 +604,8 @@ To avoid this, use the task <a href="../015_tasks/03_task_previewSite.html"><cod
     <script src="../js/main.min.b5fc1b29d2465835844254bd4d804738eaf24c0cec53009b4c6899989be55a47.js"></script>
     <script src="../js/blocks.js" ></script>
     <script src="../js/prettify.js"></script>
+    <script src="../js/copy-n-paste.js"></script>
+    <script src="../js/submenucollapse.js"></script>
 
 
 </body>
